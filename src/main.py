@@ -1,13 +1,14 @@
 
 import os
 import json
+import datetime
 from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, GenderCat, HairColorCat, SkinColorCat, EyeColorCat, ClimateCat, TerrainCat, VehicleClassCat, User, People, Planet, Vehicle, Favorite
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 
 app = Flask(__name__)
@@ -32,7 +33,113 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route("/users/login", methods=["POST"])
+# INICIO - Definición de EndPoints para el Modelo [GenderCat] - INICIO
+# [GET] - Ruta para obtener todos los [GenderCat]
+@app.route('/api/gendercat', methods=['GET'])
+@jwt_required()
+def indexAllGenderCat():
+
+    results = GenderCat.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [GenderCat]
+@app.route('/api/gendercat/<int:id>', methods=['GET'])
+@jwt_required()
+def indexGenderCat(id):
+    genderCat = GenderCat.query.get(id)
+
+    if genderCat is None:
+        raise APIException('El genero con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(GenderCat.serialize(genderCat)), 200
+
+# [POST] - Ruta para crear un [GenderCat]
+@app.route('/api/gendercat', methods=['POST'])
+@jwt_required()
+def storeGenderCat():
+
+    data_request = request.get_json()
+
+    genderCat = GenderCat.query.filter_by(name=data_request["name"]).first()
+    
+    # Se valida que el name no haya sido registrado.
+    if genderCat:
+        return jsonify({"msg": "El name ya fue registrado."}), 401
+    
+    genderCat = GenderCat(name=data_request["name"])
+
+    try:
+        db.session.add(genderCat) 
+        db.session.commit()
+        
+        return jsonify(GenderCat.serialize(genderCat)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [GenderCat]
+@app.route('/api/gendercat/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateGenderCat(id):
+
+    genderCat = GenderCat.query.get(id)
+
+    if genderCat is None:
+        raise APIException('El genero con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+    
+    genderCat.name = data_request["name"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(GenderCat.serialize(genderCat)), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [GenderCat]
+@app.route('/api/gendercat/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteGenderCat(id):
+
+    genderCat = GenderCat.query.get(id)
+
+    if genderCat is None:
+        raise APIException('El genero con el id indicado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(genderCat)
+        db.session.commit()
+        
+        return jsonify('El genero fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+# FIN - Definición de EndPoints para el Modelo [GenderCat] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [HairColorCat] - INICIO
+# FIN - Definición de EndPoints para el Modelo [HairColorCat] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [SkinColorCat] - INICIO
+# FIN - Definición de EndPoints para el Modelo [SkinColorCat] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [EyeColorCat] - INICIO
+# FIN - Definición de EndPoints para el Modelo [EyeColorCat] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [ClimateCat] - INICIO
+# FIN - Definición de EndPoints para el Modelo [ClimateCat] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [TerrainCat] - INICIO
+# FIN - Definición de EndPoints para el Modelo [TerrainCat] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [VehicleClassCat] - INICIO
+# FIN - Definición de EndPoints para el Modelo [VehicleClassCat] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [User] para Login y Registro - INICIO
+@app.route("/api/users/login", methods=["POST"])
 def login():
     email = request.json.get("email", None)
     password = request.json.get("password", None)
@@ -49,11 +156,12 @@ def login():
         # the user was not found on the database
         return jsonify({"msg": "El email o el password son invalidos."}), 401
     else:
-        access_token = create_access_token(identity=user.id)
+        expiration_date = datetime.timedelta(days=1)
+        access_token = create_access_token(identity=user.id,expires_delta=expiration_date)
         return jsonify({ "token": access_token, "user_id": user.id }), 200
 
 # [POST] - Ruta para registro de un [user]
-@app.route('/users/register', methods=['POST'])
+@app.route('/api/users/register', methods=['POST'])
 def register():
 
     data_request = request.get_json()
@@ -74,30 +182,31 @@ def register():
     
     except AssertionError as exception_message: 
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
+# FIN - Definición de EndPoints para el Modelo [User] para Login y Registro - FIN
 
-# Protect a route with jwt_required, which will kick out requests
-# without a valid JWT present.
-@app.route("/users/protected", methods=["GET"])
-@jwt_required()
-def protected():
-    # Access the identity of the current user with get_jwt_identity
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-
-    return jsonify({"id": user.id, "email": user.email }), 200
-
-# INICIO - Definición de EndPoints para el Modelo User - INICIO
+# INICIO - Definición de EndPoints para el Modelo [User] - INICIO
 # [GET] - Ruta para obtener todos los [user]
-@app.route('/users', methods=['GET'])
+@app.route('/api/users', methods=['GET'])
 @jwt_required()
-def indexUser():
+def indexAllUser():
 
     results = User.query.all()
 
     return jsonify(list(map(lambda x: x.serialize(), results))), 200
 
+# [GET] - Ruta para obtener un [user]
+@app.route('/api/users/<int:id>', methods=['GET'])
+@jwt_required()
+def indexUser(id):
+    user = User.query.get(id)
+
+    if user is None:
+        raise APIException('El usuario con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(User.serialize(user)), 200
+
 # [POST] - Ruta para crear un [user]
-@app.route('/users', methods=['POST'])
+@app.route('/api/users', methods=['POST'])
 @jwt_required()
 def storeUser():
 
@@ -108,22 +217,41 @@ def storeUser():
     # Se valida que el email no haya sido registrado.
     if user:
         return jsonify({"msg": "El email ya fue registrado."}), 401
-    
-    user = User(email=data_request["email"], password=data_request["password"], is_active=data_request["is_active"])
+
+    user = User(name = data_request["name"],
+    first_surname = data_request["first_surname"],
+    second_surname = data_request["second_surname"],
+    user_name = data_request["user_name"],
+    user_image = data_request["user_image"],
+    email = data_request["email"],
+    password = data_request["password"],
+    is_active = data_request["is_active"])
 
     try:
-        db.session.add(user) 
+        db.session.add(user)
         db.session.commit()
         
         return jsonify(User.serialize(user)), 201
     
     except AssertionError as exception_message: 
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [user]
+@app.route('/api/users/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateUser(id):
+
+    user = User.query.get(id)
+
     if user is None:
-        raise APIException('El usuario con el id indicado, no fue encontrado.',status_code=403)
+        raise APIException('El user con el id especificado, no fue encontrado.',status_code=403)
 
     data_request = request.get_json()
 
+    user.name = data_request["name"]
+    user.first_surname = data_request["first_surname"]
+    user.second_surname = data_request["second_surname"]
+    user.user_image = data_request["user_image"]
     user.password = data_request["password"]
     user.is_active = data_request["is_active"]
 
@@ -136,7 +264,7 @@ def storeUser():
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
 
 # [DELETE] - Ruta para eliminar un [user]
-@app.route('/users/<int:id>', methods=['DELETE'])
+@app.route('/api/users/<int:id>', methods=['DELETE'])
 @jwt_required()
 def deleteUser(id):
 
@@ -153,7 +281,216 @@ def deleteUser(id):
     
     except AssertionError as exception_message: 
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
-# FIN - Definición de EndPoints para el Modelo User - FIN
+# FIN - Definición de EndPoints para el Modelo [User] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [People] - INICIO
+# [GET] - Ruta para obtener todos los [People]
+@app.route('/api/peoples', methods=['GET'])
+@jwt_required()
+def indexAllPeople():
+
+    results = People.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [People]
+@app.route('/api/peoples/<int:id>', methods=['GET'])
+@jwt_required()
+def indexPeople(id):
+    people = People.query.get(id)
+
+    if people is None:
+        raise APIException('La persona con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(People.serialize(people)), 200
+
+# [POST] - Ruta para crear un [People]
+@app.route('/api/peoples', methods=['POST'])
+@jwt_required()
+def storePeople():
+
+    data_request = request.get_json()
+
+    if  data_request["name"] is None or data_request["name"] == '':
+         raise APIException('El name es requerido.',status_code=403)
+    
+    people = People(name = data_request["name"],
+    birth_year = data_request["birth_year"],
+    height = data_request["height"],
+    mass = data_request["mass"],
+    people_image = data_request["people_image"],
+    gender_cat_id = data_request["gender_cat_id"],
+    hair_color_cat_id = data_request["hair_color_cat_id"],
+    skin_color_cat_id = data_request["skin_color_cat_id"],
+    eye_color_cat_id = data_request["eye_color_cat_id"])
+
+    try: 
+        db.session.add(people) 
+        db.session.commit()
+        
+        return jsonify(People.serialize(people)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [People]
+@app.route('/api/peoples/<int:id>', methods=['PUT'])
+@jwt_required()
+def updatePeople(id):
+
+    people = People.query.get(id)
+
+    if people is None:
+        raise APIException('La persona con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+
+    people.name = data_request["name"]
+    people.birth_year = data_request["birth_year"]
+    people.height = data_request["height"]
+    people.mass = data_request["mass"]
+    people.people_image = data_request["people_image"]
+    people.gender_cat_id = data_request["gender_cat_id"]
+    people.hair_color_cat_id = data_request["hair_color_cat_id"]
+    people.skin_color_cat_id = data_request["skin_color_cat_id"]
+    people.eye_color_cat_id = data_request["eye_color_cat_id"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(People.serialize(people)), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [People]
+@app.route('/api/peoples/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deletePeople(id):
+
+    people = People.query.get(id)
+
+    if people is None:
+        raise APIException('La persona con el id indicado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(people)
+        db.session.commit()
+        
+        return jsonify('La persona fue eliminada satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+# FIN - Definición de EndPoints para el Modelo [People] - FIN
+
+
+# INICIO - Definición de EndPoints para el Modelo [Planet] - INICIO
+# [GET] - Ruta para obtener todos los [Planet]
+@app.route('/api/planets', methods=['GET'])
+@jwt_required()
+def indexAllPlanet():
+
+    results = Planet.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [Planet]
+@app.route('/api/planets/<int:id>', methods=['GET'])
+@jwt_required()
+def indexPlanet(id):
+    planet = Planet.query.get(id)
+
+    if planet is None:
+        raise APIException('El planeta con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(Planet.serialize(planet)), 200
+
+# [POST] - Ruta para crear un [Planet]
+@app.route('/api/planets', methods=['POST'])
+@jwt_required()
+def storePlanet():
+
+    data_request = request.get_json()
+
+    if  data_request["name"] is None or data_request["name"] == '':
+         raise APIException('El name es requerido.',status_code=403)
+    
+    planet = Planet(name = data_request["name"],
+    rotation_period = data_request["rotation_period"],
+    orbital_period = data_request["orbital_period"],
+    diameter = data_request["diameter"],
+    gravity = data_request["gravity"],
+    surface_water = data_request["surface_water"],
+    population = data_request["population"],
+    planet_image = data_request["planet_image"],
+    climate_cat_id = data_request["climate_cat_id"],
+    terrain_cat_id = data_request["terrain_cat_id"])
+
+    try: 
+        db.session.add(planet) 
+        db.session.commit()
+        
+        return jsonify(Planet.serialize(planet)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [Planet]
+@app.route('/api/planets/<int:id>', methods=['PUT'])
+@jwt_required()
+def updatePlanet(id):
+
+    planet = Planet.query.get(id)
+
+    if planet is None:
+        raise APIException('El planeta con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+
+    planet.name = data_request["name"]
+    planet.rotation_period = data_request["rotation_period"]
+    planet.orbital_period = data_request["orbital_period"]
+    planet.diameter = data_request["diameter"]
+    planet.gravity = data_request["gravity"]
+    planet.surface_water = data_request["surface_water"]
+    planet.population = data_request["population"]
+    planet.planet_image = data_request["planet_image"]
+    planet.climate_cat_id = data_request["climate_cat_id"]
+    planet.terrain_cat_id = data_request["terrain_cat_id"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(Planet.serialize(planet)), 200
+    
+    except AssertionError as exception_message:
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [Planet]
+@app.route('/api/planets/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deletePlanet(id):
+
+    planet = Planet.query.get(id)
+
+    if planet is None:
+        raise APIException('El planeta con el id indicado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(planet)
+        db.session.commit()
+        
+        return jsonify('El planeta fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+# FIN - Definición de EndPoints para el Modelo [Planet] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [Vehicle] - INICIO
+# FIN - Definición de EndPoints para el Modelo [Vehicle] - FIN
+
+# INICIO - Definición de EndPoints para el Modelo [Favorite] - INICIO
+# FIN - Definición de EndPoints para el Modelo [Favorite] - FIN
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
