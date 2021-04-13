@@ -595,24 +595,29 @@ def deleteVehicle(id):
 
 
 # INICIO - Definición de EndPoints para el Modelo [Favorite] - INICIO
-# [GET] - Ruta para obtener todos los [Favorite]
-@app.route('/api/favorites', methods=['GET'])
+# [GET] - Ruta para obtener todos los [Favorite] por usuario
+@app.route('/api/favorites/<int:userId>', methods=['GET'])
 @jwt_required()
-def indexAllFavorite():
+def indexAllFavorite(userId):
+    results = Favorite.query.filter_by(user_id=userId)
 
-    results = Favorite.query.all()
+    if results is None:
+        raise APIException('Los favoritos del usuario con el id especificado, no fueron0 encontrados.',status_code=403)
 
     return jsonify(list(map(lambda x: x.serialize(), results))), 200
+    # return jsonify('Entro al favorito'), 200
 
 # [POST] - Ruta para crear un [Favorite]
 @app.route('/api/favorites', methods=['POST'])
 @jwt_required()
 def storeFavorite():
-
     data_request = request.get_json()
 
     if  data_request["user_id"] is None or data_request["user_id"] == '':
          raise APIException('El user_id es requerido.',status_code=403)
+   
+    if  data_request["name"] is None or data_request["name"] == '':
+         raise APIException('El name es requerido.',status_code=403)
     
     if  data_request["favorite_id"] is None or data_request["favorite_id"] == '':
          raise APIException('El favorite_id es requerido.',status_code=403)
@@ -621,6 +626,7 @@ def storeFavorite():
          raise APIException('El favorite_type es requerido.',status_code=403)
     
     favorite = Favorite(user_id = data_request["user_id"],
+    name = data_request["name"],
     favorite_id = data_request["favorite_id"],
     favorite_type = data_request["favorite_type"])
 
@@ -637,7 +643,6 @@ def storeFavorite():
 @app.route('/api/favorites/<int:id>', methods=['DELETE'])
 @jwt_required()
 def deleteFavorite(id):
-
     favorite = Favorite.query.get(id)
 
     if favorite is None:

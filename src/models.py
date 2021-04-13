@@ -5,7 +5,7 @@ db = SQLAlchemy()
 
 # Definición de Tipo de Dato Personalizado para identificar las entidades principales
 class EntityTypeEnum(enum.Enum):
-    person = 1
+    people = 1
     planet = 2
     vehicle = 3
 
@@ -236,9 +236,11 @@ class Vehicle(db.Model):
 # Modelo para la tabla [Favorite]
 class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     favorite_id = db.Column(db.Integer, nullable=False)
-    favorite_type = db.Column(db.Enum(EntityTypeEnum), nullable=False)
+    favorite_type = db.Column(db.Integer, nullable=False)
+    # favorite_type = db.Column(db.Enum(EntityTypeEnum), nullable=False)
 
     def __repr__(self):
         return '<Favorite %r>' % self.user_id
@@ -246,6 +248,7 @@ class Favorite(db.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "name": self.name,
             "user_id": self.user_id,
             "favorite_id": self.favorite_id,
             "favorite_type": self.favorite_type
