@@ -486,10 +486,171 @@ def deletePlanet(id):
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [Planet] - FIN
 
+
 # INICIO - Definición de EndPoints para el Modelo [Vehicle] - INICIO
+# [GET] - Ruta para obtener todos los [Vehicle]
+@app.route('/api/vehicles', methods=['GET'])
+@jwt_required()
+def indexAllVehicle():
+
+    results = Vehicle.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [Vehicle]
+@app.route('/api/vehicles/<int:id>', methods=['GET'])
+@jwt_required()
+def indexVehicle(id):
+    vehicle = Vehicle.query.get(id)
+
+    if vehicle is None:
+        raise APIException('El vehículo con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(Vehicle.serialize(vehicle)), 200
+
+# [POST] - Ruta para crear un [Vehicle]
+@app.route('/api/vehicles', methods=['POST'])
+@jwt_required()
+def storeVehicle():
+
+    data_request = request.get_json()
+
+    if  data_request["name"] is None or data_request["name"] == '':
+         raise APIException('El name es requerido.',status_code=403)
+    
+    vehicle = Vehicle(name = data_request["name"],
+    model = data_request["model"],
+    manufacturer = data_request["manufacturer"],
+    cost_in_credits = data_request["cost_in_credits"],
+    length = data_request["length"],
+    max_atmosphering_speed = data_request["max_atmosphering_speed"],
+    crew = data_request["crew"],
+    passengers = data_request["passengers"],
+    cargo_capacity = data_request["cargo_capacity"],
+    consumables = data_request["consumables"],
+    vehicle_image = data_request["vehicle_image"],
+    vehicle_class_cat_id = data_request["vehicle_class_cat_id"])
+
+    try: 
+        db.session.add(vehicle) 
+        db.session.commit()
+        
+        return jsonify(Vehicle.serialize(vehicle)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [Vehicle]
+@app.route('/api/vehicles/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateVehicle(id):
+
+    vehicle = Vehicle.query.get(id)
+
+    if vehicle is None:
+        raise APIException('El vehículo con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+
+    vehicle.name = data_request["name"]
+    vehicle.model = data_request["model"]
+    vehicle.manufacturer = data_request["manufacturer"]
+    vehicle.cost_in_credits = data_request["cost_in_credits"]
+    vehicle.length = data_request["length"]
+    vehicle.max_atmosphering_speed = data_request["max_atmosphering_speed"]
+    vehicle.crew = data_request["crew"]
+    vehicle.passengers = data_request["passengers"]
+    vehicle.cargo_capacity = data_request["cargo_capacity"]
+    vehicle.consumables = data_request["consumables"]
+    vehicle.vehicle_image = data_request["vehicle_image"]
+    vehicle.vehicle_class_cat_id = data_request["vehicle_class_cat_id"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(Vehicle.serialize(vehicle)), 200
+    
+    except AssertionError as exception_message:
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [Vehicle]
+@app.route('/api/vehicles/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteVehicle(id):
+
+    vehicle = Vehicle.query.get(id)
+
+    if vehicle is None:
+        raise APIException('El vehiculo con el id especificado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(vehicle)
+        db.session.commit()
+        
+        return jsonify('El vehiculo fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [Vehicle] - FIN
 
+
 # INICIO - Definición de EndPoints para el Modelo [Favorite] - INICIO
+# [GET] - Ruta para obtener todos los [Favorite]
+@app.route('/api/favorites', methods=['GET'])
+@jwt_required()
+def indexAllFavorite():
+
+    results = Favorite.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [POST] - Ruta para crear un [Favorite]
+@app.route('/api/favorites', methods=['POST'])
+@jwt_required()
+def storeFavorite():
+
+    data_request = request.get_json()
+
+    if  data_request["user_id"] is None or data_request["user_id"] == '':
+         raise APIException('El user_id es requerido.',status_code=403)
+    
+    if  data_request["favorite_id"] is None or data_request["favorite_id"] == '':
+         raise APIException('El favorite_id es requerido.',status_code=403)
+    
+    if  data_request["favorite_type"] is None or data_request["favorite_type"] == '':
+         raise APIException('El favorite_type es requerido.',status_code=403)
+    
+    favorite = Favorite(user_id = data_request["user_id"],
+    favorite_id = data_request["favorite_id"],
+    favorite_type = data_request["favorite_type"])
+
+    try: 
+        db.session.add(favorite) 
+        db.session.commit()
+        
+        return jsonify(Favorite.serialize(favorite)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [Favorite]
+@app.route('/api/favorites/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteFavorite(id):
+
+    favorite = Favorite.query.get(id)
+
+    if favorite is None:
+        raise APIException('El favorito con el id especificado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(favorite)
+        db.session.commit()
+        
+        return jsonify('El favorito fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [Favorite] - FIN
 
 # this only runs if `$ python src/main.py` is executed

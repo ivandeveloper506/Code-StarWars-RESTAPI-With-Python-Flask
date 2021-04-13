@@ -241,21 +241,12 @@ class Favorite(db.Model):
     favorite_type = db.Column(db.Enum(EntityTypeEnum), nullable=False)
 
     def __repr__(self):
-        return '<Vehicle %r>' % self.name
+        return '<Favorite %r>' % self.user_id
 
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name,
-            "model": self.model,
-            "manufacturer": self.manufacturer,
-            "cost_in_credits": self.cost_in_credits,
-            "length": self.length,
-            "max_atmosphering_speed": self.max_atmosphering_speed,
-            "crew": self.crew,
-            "passengers": self.passengers,
-            "cargo_capacity": self.cargo_capacity,
-            "consumables": self.consumables,
-            "vehicle_image": self.vehicle_image,
-            "vehicle_class_cat_id": self.vehicle_class_cat_id
+            "user_id": self.user_id,
+            "favorite_id": self.favorite_id,
+            "favorite_type": self.favorite_type
         }
