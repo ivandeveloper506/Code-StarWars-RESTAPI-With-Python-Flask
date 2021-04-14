@@ -23,12 +23,10 @@ setup_admin(app)
 
 jwt = JWTManager(app)
 
-# Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-# generate sitemap with all your endpoints
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
@@ -108,7 +106,7 @@ def deleteGenderCat(id):
     genderCat = GenderCat.query.get(id)
 
     if genderCat is None:
-        raise APIException('El genero con el id indicado, no fue encontrado.',status_code=403)
+        raise APIException('El genero con el id especificado, no fue encontrado.',status_code=403)
 
     try:
         db.session.delete(genderCat)
@@ -120,11 +118,98 @@ def deleteGenderCat(id):
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [GenderCat] - FIN
 
+
 # INICIO - Definición de EndPoints para el Modelo [HairColorCat] - INICIO
+# [GET] - Ruta para obtener todos los [HairColorCat]
+@app.route('/api/haircolorcat', methods=['GET'])
+@jwt_required()
+def indexAllHairColorCat():
+
+    results = HairColorCat.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [HairColorCat]
+@app.route('/api/haircolorcat/<int:id>', methods=['GET'])
+@jwt_required()
+def indexHairColorCat(id):
+    hairColorCat = HairColorCat.query.get(id)
+
+    if hairColorCat is None:
+        raise APIException('El color de cabello con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(HairColorCat.serialize(hairColorCat)), 200
+
+# [POST] - Ruta para crear un [HairColorCat]
+@app.route('/api/haircolorcat', methods=['POST'])
+@jwt_required()
+def storeHairColorCat():
+
+    data_request = request.get_json()
+
+    hairColorCat = HairColorCat.query.filter_by(name=data_request["name"]).first()
+    
+    # Se valida que el name no haya sido registrado.
+    if hairColorCat:
+        return jsonify({"msg": "El name ya fue registrado."}), 401
+    
+    hairColorCat = HairColorCat(name=data_request["name"])
+
+    try:
+        db.session.add(hairColorCat) 
+        db.session.commit()
+        
+        return jsonify(HairColorCat.serialize(hairColorCat)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [HairColorCat]
+@app.route('/api/haircolorcat/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateHairColorCat(id):
+
+    haircolorcat = HairColorCat.query.get(id)
+
+    if haircolorcat is None:
+        raise APIException('El color de cabello con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+    
+    haircolorcat.name = data_request["name"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(GenderCat.serialize(haircolorcat)), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [HairColorCat]
+@app.route('/api/haircolorcat/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteHairColorCat(id):
+
+    hairColorCat = HairColorCat.query.get(id)
+
+    if hairColorCat is None:
+        raise APIException('El color de cabello con el id especificado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(hairColorCat)
+        db.session.commit()
+        
+        return jsonify('El color de cabello fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [HairColorCat] - FIN
+
 
 # INICIO - Definición de EndPoints para el Modelo [SkinColorCat] - INICIO
 # FIN - Definición de EndPoints para el Modelo [SkinColorCat] - FIN
+
 
 # INICIO - Definición de EndPoints para el Modelo [EyeColorCat] - INICIO
 # FIN - Definición de EndPoints para el Modelo [EyeColorCat] - FIN
@@ -132,11 +217,14 @@ def deleteGenderCat(id):
 # INICIO - Definición de EndPoints para el Modelo [ClimateCat] - INICIO
 # FIN - Definición de EndPoints para el Modelo [ClimateCat] - FIN
 
+
 # INICIO - Definición de EndPoints para el Modelo [TerrainCat] - INICIO
 # FIN - Definición de EndPoints para el Modelo [TerrainCat] - FIN
 
+
 # INICIO - Definición de EndPoints para el Modelo [VehicleClassCat] - INICIO
 # FIN - Definición de EndPoints para el Modelo [VehicleClassCat] - FIN
+
 
 # INICIO - Definición de EndPoints para el Modelo [User] para Login y Registro - INICIO
 @app.route("/api/users/login", methods=["POST"])
@@ -183,6 +271,7 @@ def register():
     except AssertionError as exception_message: 
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [User] para Login y Registro - FIN
+
 
 # INICIO - Definición de EndPoints para el Modelo [User] - INICIO
 # [GET] - Ruta para obtener todos los [user]
@@ -271,7 +360,7 @@ def deleteUser(id):
     user = User.query.get(id)
 
     if user is None:
-        raise APIException('El usuario con el id indicado, no fue encontrado.',status_code=403)
+        raise APIException('El usuario con el id especificado, no fue encontrado.',status_code=403)
 
     try:
         db.session.delete(user)
@@ -282,6 +371,7 @@ def deleteUser(id):
     except AssertionError as exception_message: 
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [User] - FIN
+
 
 # INICIO - Definición de EndPoints para el Modelo [People] - INICIO
 # [GET] - Ruta para obtener todos los [People]
@@ -371,7 +461,7 @@ def deletePeople(id):
     people = People.query.get(id)
 
     if people is None:
-        raise APIException('La persona con el id indicado, no fue encontrado.',status_code=403)
+        raise APIException('La persona con el id especificado, no fue encontrado.',status_code=403)
 
     try:
         db.session.delete(people)
@@ -474,7 +564,7 @@ def deletePlanet(id):
     planet = Planet.query.get(id)
 
     if planet is None:
-        raise APIException('El planeta con el id indicado, no fue encontrado.',status_code=403)
+        raise APIException('El planeta con el id especificado, no fue encontrado.',status_code=403)
 
     try:
         db.session.delete(planet)
@@ -658,7 +748,6 @@ def deleteFavorite(id):
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [Favorite] - FIN
 
-# this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
