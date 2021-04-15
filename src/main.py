@@ -376,7 +376,6 @@ def deleteUser(id):
 # INICIO - Definición de EndPoints para el Modelo [People] - INICIO
 # [GET] - Ruta para obtener todos los [People]
 @app.route('/api/peoples', methods=['GET'])
-@jwt_required()
 def indexAllPeople():
 
     results = People.query.all()
@@ -385,7 +384,6 @@ def indexAllPeople():
 
 # [GET] - Ruta para obtener un [People]
 @app.route('/api/peoples/<int:id>', methods=['GET'])
-@jwt_required()
 def indexPeople(id):
     people = People.query.get(id)
 
@@ -477,7 +475,6 @@ def deletePeople(id):
 # INICIO - Definición de EndPoints para el Modelo [Planet] - INICIO
 # [GET] - Ruta para obtener todos los [Planet]
 @app.route('/api/planets', methods=['GET'])
-@jwt_required()
 def indexAllPlanet():
 
     results = Planet.query.all()
@@ -486,7 +483,6 @@ def indexAllPlanet():
 
 # [GET] - Ruta para obtener un [Planet]
 @app.route('/api/planets/<int:id>', methods=['GET'])
-@jwt_required()
 def indexPlanet(id):
     planet = Planet.query.get(id)
 
@@ -580,7 +576,6 @@ def deletePlanet(id):
 # INICIO - Definición de EndPoints para el Modelo [Vehicle] - INICIO
 # [GET] - Ruta para obtener todos los [Vehicle]
 @app.route('/api/vehicles', methods=['GET'])
-@jwt_required()
 def indexAllVehicle():
 
     results = Vehicle.query.all()
@@ -589,7 +584,6 @@ def indexAllVehicle():
 
 # [GET] - Ruta para obtener un [Vehicle]
 @app.route('/api/vehicles/<int:id>', methods=['GET'])
-@jwt_required()
 def indexVehicle(id):
     vehicle = Vehicle.query.get(id)
 
