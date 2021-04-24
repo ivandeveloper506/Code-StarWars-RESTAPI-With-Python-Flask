@@ -260,7 +260,13 @@ def register():
     if user:
         return jsonify({"msg": "El email ya fue registrado."}), 401
     
-    user = User(email=data_request["email"], password=data_request["password"], is_active=data_request["is_active"])
+    user = User(name = data_request["name"],
+    first_surname = data_request["first_surname"],
+    second_surname = data_request["second_surname"],
+    user_image = data_request["user_image"],
+    email = data_request["email"],
+    password = data_request["password"],
+    is_active = data_request["is_active"])
 
     try:
         db.session.add(user) 
@@ -310,7 +316,6 @@ def storeUser():
     user = User(name = data_request["name"],
     first_surname = data_request["first_surname"],
     second_surname = data_request["second_surname"],
-    user_name = data_request["user_name"],
     user_image = data_request["user_image"],
     email = data_request["email"],
     password = data_request["password"],
