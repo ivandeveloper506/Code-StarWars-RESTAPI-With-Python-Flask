@@ -181,7 +181,7 @@ def updateHairColorCat(id):
     try: 
         db.session.commit()
         
-        return jsonify(GenderCat.serialize(haircolorcat)), 200
+        return jsonify(HairColorCat.serialize(haircolorcat)), 200
     
     except AssertionError as exception_message: 
         return jsonify(msg='Error: {}. '.format(exception_message)), 400
@@ -208,21 +208,436 @@ def deleteHairColorCat(id):
 
 
 # INICIO - Definición de EndPoints para el Modelo [SkinColorCat] - INICIO
+@app.route('/api/skincolorcat', methods=['GET'])
+@jwt_required()
+def indexAllSkinColorCat():
+
+    results = SkinColorCat.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [SkinColorCat]
+@app.route('/api/skincolorcat/<int:id>', methods=['GET'])
+@jwt_required()
+def indexSkinColorCat(id):
+    skinColorCat = SkinColorCat.query.get(id)
+
+    if skinColorCat is None:
+        raise APIException('El color de piel con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(SkinColorCat.serialize(skinColorCat)), 200
+
+# [POST] - Ruta para crear un [SkinColorCat]
+@app.route('/api/skincolorcat', methods=['POST'])
+@jwt_required()
+def storeSkinColorCat():
+
+    data_request = request.get_json()
+
+    skinColorCat = SkinColorCat.query.filter_by(name=data_request["name"]).first()
+    
+    # Se valida que el name no haya sido registrado.
+    if skinColorCat:
+        return jsonify({"msg": "El name ya fue registrado."}), 401
+    
+    skinColorCat = SkinColorCat(name=data_request["name"])
+
+    try:
+        db.session.add(skinColorCat) 
+        db.session.commit()
+        
+        return jsonify(SkinColorCat.serialize(skinColorCat)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [SkinColorCat]
+@app.route('/api/skincolorcat/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateSkinColorCat(id):
+
+    skincolorcat = SkinColorCat.query.get(id)
+
+    if skincolorcat is None:
+        raise APIException('El color de piel con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+    
+    skincolorcat.name = data_request["name"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(SkinColorCat.serialize(skincolorcat)), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [SkinColorCat]
+@app.route('/api/skincolorcat/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteSkinColorCat(id):
+
+    skinColorCat = SkinColorCat.query.get(id)
+
+    if skinColorCat is None:
+        raise APIException('El color de piel con el id especificado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(skinColorCat)
+        db.session.commit()
+        
+        return jsonify('El color de piel fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [SkinColorCat] - FIN
 
 
 # INICIO - Definición de EndPoints para el Modelo [EyeColorCat] - INICIO
+@app.route('/api/eyecolorcat', methods=['GET'])
+@jwt_required()
+def indexAllEyeColorCat():
+
+    results = EyeColorCat.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [EyeColorCat]
+@app.route('/api/eyecolorcat/<int:id>', methods=['GET'])
+@jwt_required()
+def indexEyeColorCat(id):
+    eyeColorCat = EyeColorCat.query.get(id)
+
+    if eyeColorCat is None:
+        raise APIException('El color de ojos con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(EyeColorCat.serialize(eyeColorCat)), 200
+
+# [POST] - Ruta para crear un [EyeColorCat]
+@app.route('/api/eyecolorcat', methods=['POST'])
+@jwt_required()
+def storeEyeColorCat():
+
+    data_request = request.get_json()
+
+    eyeColorCat = EyeColorCat.query.filter_by(name=data_request["name"]).first()
+    
+    # Se valida que el name no haya sido registrado.
+    if eyeColorCat:
+        return jsonify({"msg": "El name ya fue registrado."}), 401
+    
+    eyeColorCat = EyeColorCat(name=data_request["name"])
+
+    try:
+        db.session.add(eyeColorCat) 
+        db.session.commit()
+        
+        return jsonify(EyeColorCat.serialize(eyeColorCat)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [EyeColorCat]
+@app.route('/api/eyecolorcat/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateEyeColorCat(id):
+
+    eyecolorcat = EyeColorCat.query.get(id)
+
+    if eyecolorcat is None:
+        raise APIException('El color de ojos con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+    
+    eyecolorcat.name = data_request["name"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(EyeColorCat.serialize(eyecolorcat)), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [EyeColorCat]
+@app.route('/api/eyecolorcat/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteEyeColorCat(id):
+
+    eyeColorCat = EyeColorCat.query.get(id)
+
+    if eyeColorCat is None:
+        raise APIException('El color de ojos con el id especificado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(eyeColorCat)
+        db.session.commit()
+        
+        return jsonify('El color de ojos fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [EyeColorCat] - FIN
 
 # INICIO - Definición de EndPoints para el Modelo [ClimateCat] - INICIO
+@app.route('/api/climatecat', methods=['GET'])
+@jwt_required()
+def indexAllClimateCat():
+
+    results = ClimateCat.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [ClimateCat]
+@app.route('/api/climatecat/<int:id>', methods=['GET'])
+@jwt_required()
+def indexClimateCat(id):
+    climateCat = ClimateCat.query.get(id)
+
+    if climateCat is None:
+        raise APIException('El clima con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(ClimateCat.serialize(climateCat)), 200
+
+# [POST] - Ruta para crear un [ClimateCat]
+@app.route('/api/climatecat', methods=['POST'])
+@jwt_required()
+def storeClimateCat():
+
+    data_request = request.get_json()
+
+    climateCat = ClimateCat.query.filter_by(name=data_request["name"]).first()
+    
+    # Se valida que el name no haya sido registrado.
+    if climateCat:
+        return jsonify({"msg": "El name ya fue registrado."}), 401
+    
+    climateCat = ClimateCat(name=data_request["name"])
+
+    try:
+        db.session.add(climateCat) 
+        db.session.commit()
+        
+        return jsonify(ClimateCat.serialize(climateCat)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [ClimateCat]
+@app.route('/api/climatecat/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateClimateCat(id):
+
+    climatecat = ClimateCat.query.get(id)
+
+    if climatecat is None:
+        raise APIException('El clima con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+    
+    climatecat.name = data_request["name"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(ClimateCat.serialize(climatecat)), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [ClimateCat]
+@app.route('/api/climatecat/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteClimateCat(id):
+
+    climateCat = ClimateCat.query.get(id)
+
+    if climateCat is None:
+        raise APIException('El clima con el id especificado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(climateCat)
+        db.session.commit()
+        
+        return jsonify('El clima fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [ClimateCat] - FIN
 
 
 # INICIO - Definición de EndPoints para el Modelo [TerrainCat] - INICIO
+@app.route('/api/terraincat', methods=['GET'])
+@jwt_required()
+def indexAllTerrainCat():
+
+    results = TerrainCat.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [TerrainCat]
+@app.route('/api/terraincat/<int:id>', methods=['GET'])
+@jwt_required()
+def indexTerrainCat(id):
+    terrainCat = TerrainCat.query.get(id)
+
+    if terrainCat is None:
+        raise APIException('El terreno con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(TerrainCat.serialize(terrainCat)), 200
+
+# [POST] - Ruta para crear un [TerrainCat]
+@app.route('/api/terraincat', methods=['POST'])
+@jwt_required()
+def storeTerrainCat():
+
+    data_request = request.get_json()
+
+    terrainCat = TerrainCat.query.filter_by(name=data_request["name"]).first()
+    
+    # Se valida que el name no haya sido registrado.
+    if terrainCat:
+        return jsonify({"msg": "El name ya fue registrado."}), 401
+    
+    terrainCat = TerrainCat(name=data_request["name"])
+
+    try:
+        db.session.add(terrainCat) 
+        db.session.commit()
+        
+        return jsonify(TerrainCat.serialize(terrainCat)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [TerrainCat]
+@app.route('/api/terraincat/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateTerrainCat(id):
+
+    terraincat = TerrainCat.query.get(id)
+
+    if terraincat is None:
+        raise APIException('El terreno con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+    
+    terraincat.name = data_request["name"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(TerrainCat.serialize(terraincat)), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [TerrainCat]
+@app.route('/api/terraincat/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteTerrainCat(id):
+
+    terrainCat = TerrainCat.query.get(id)
+
+    if terrainCat is None:
+        raise APIException('El terreno con el id especificado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(terrainCat)
+        db.session.commit()
+        
+        return jsonify('El terreno fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [TerrainCat] - FIN
 
 
 # INICIO - Definición de EndPoints para el Modelo [VehicleClassCat] - INICIO
+@app.route('/api/vehicleclasscat', methods=['GET'])
+@jwt_required()
+def indexAllVehicleClassCat():
+
+    results = VehicleClassCat.query.all()
+
+    return jsonify(list(map(lambda x: x.serialize(), results))), 200
+
+# [GET] - Ruta para obtener un [VehicleClassCat]
+@app.route('/api/vehicleclasscat/<int:id>', methods=['GET'])
+@jwt_required()
+def indexVehicleClassCat(id):
+    vehicleClassCat = VehicleClassCat.query.get(id)
+
+    if vehicleClassCat is None:
+        raise APIException('La clase de vehículo con el id especificado, no fue encontrado.',status_code=403)
+
+    return jsonify(VehicleClassCat.serialize(vehicleClassCat)), 200
+
+# [POST] - Ruta para crear un [VehicleClassCat]
+@app.route('/api/vehicleclasscat', methods=['POST'])
+@jwt_required()
+def storeVehicleClassCat():
+
+    data_request = request.get_json()
+
+    vehicleClassCat = VehicleClassCat.query.filter_by(name=data_request["name"]).first()
+    
+    # Se valida que el name no haya sido registrado.
+    if vehicleClassCat:
+        return jsonify({"msg": "El name ya fue registrado."}), 401
+    
+    vehicleClassCat = VehicleClassCat(name=data_request["name"])
+
+    try:
+        db.session.add(vehicleClassCat) 
+        db.session.commit()
+        
+        return jsonify(VehicleClassCat.serialize(vehicleClassCat)), 201
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [PUT] - Ruta para modificar un [VehicleClassCat]
+@app.route('/api/vehicleclasscat/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateVehicleClassCat(id):
+
+    vehicleclasscat = VehicleClassCat.query.get(id)
+
+    if vehicleclasscat is None:
+        raise APIException('La clase de vehículo con el id especificado, no fue encontrado.',status_code=403)
+
+    data_request = request.get_json()
+    
+    vehicleclasscat.name = data_request["name"]
+
+    try: 
+        db.session.commit()
+        
+        return jsonify(VehicleClassCat.serialize(vehicleclasscat)), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
+
+# [DELETE] - Ruta para eliminar un [VehicleClassCat]
+@app.route('/api/vehicleclasscat/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteVehicleClassCat(id):
+
+    vehicleClassCat = VehicleClassCat.query.get(id)
+
+    if vehicleClassCat is None:
+        raise APIException('La clase de vehículo con el id especificado, no fue encontrado.',status_code=403)
+
+    try:
+        db.session.delete(vehicleClassCat)
+        db.session.commit()
+        
+        return jsonify('La clase de vehículo fue eliminado satisfactoriamente.'), 200
+    
+    except AssertionError as exception_message: 
+        return jsonify(msg='Error: {}. '.format(exception_message)), 400
 # FIN - Definición de EndPoints para el Modelo [VehicleClassCat] - FIN
 
 
